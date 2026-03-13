@@ -2,51 +2,57 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Vídeo Link - Direto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vídeo Link</title>
     <style>
-        body { margin: 0; font-family: sans-serif; background: linear-gradient(135deg, #800080, #FF4500, #FF0000); height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
-        .container { background: rgba(0,0,0,0.4); padding: 40px; border-radius: 25px; backdrop-filter: blur(10px); text-align: center; width: 90%; max-width: 400px; }
-        .btn-main { background: white; color: #FF4500; padding: 20px 40px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.3s; display: inline-block; }
+        body { margin: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; height: 100vh; color: white; font-family: sans-serif; }
+        .box { background: #333; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 400px; }
+        .btn { background: #FF4500; padding: 15px 30px; border-radius: 10px; cursor: pointer; display: inline-block; font-weight: bold; }
         #fileInput { display: none; }
-        #status { margin-top: 20px; font-weight: bold; }
+        input[type="text"] { width: 90%; margin-top: 20px; padding: 10px; border-radius: 5px; border: none; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="box">
         <h1>VÍDEO LINK</h1>
-        <label for="fileInput" class="btn-main">ESCOLHER VÍDEO</label>
-        <input type="file" id="fileInput" accept="video/mp4">
-        <div id="status">Selecione um arquivo para começar.</div>
+        <label for="fileInput" class="btn">SELECIONAR VÍDEO</label>
+        <input type="file" id="fileInput" accept="video/*">
+        <div id="status" style="margin-top:20px;">Aguardando...</div>
+        <div id="result" style="display:none;">
+            <input type="text" id="finalUrl" readonly>
+        </div>
     </div>
 
     <script>
-        const CLOUD_NAME = "daiq3g0sk"; // Seu Cloud Name
-        const UPLOAD_PRESET = "ml_default"; // Preset padrão da Cloudinary (certifique-se que está ativado no seu painel)
+        const cloudName = "daiq3g0sk";
+        const preset = "ml_default";
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             const status = document.getElementById('status');
-            if(!file) return;
-
-            status.innerText = "Enviando para a nuvem...";
-
+            const result = document.getElementById('result');
+            
+            status.innerText = "Enviando... não saia da página.";
+            
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('upload_preset', preset);
 
             try {
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
                     method: 'POST',
                     body: formData
                 });
-                const data = await response.json();
+                const data = await res.json();
                 
                 if(data.secure_url) {
-                    status.innerHTML = `Sucesso!<br><input type="text" value="${data.secure_url}" readonly style="width:100%; margin-top:10px;">`;
+                    status.innerText = "✅ Sucesso!";
+                    document.getElementById('finalUrl').value = data.secure_url;
+                    result.style.display = "block";
                 } else {
-                    status.innerText = "Erro ao enviar: " + (data.error?.message || "Verifique o upload_preset");
+                    status.innerText = "Erro: " + (data.error?.message || "Verifique o preset 'Unsigned'");
                 }
-            } catch (err) {
+            } catch(err) {
                 status.innerText = "Erro de conexão.";
             }
         });
