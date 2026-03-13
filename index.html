@@ -2,21 +2,22 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Vídeo Link - Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vídeo Link - Pronto</title>
     <style>
-        body { margin: 0; font-family: sans-serif; background: linear-gradient(135deg, #800080, #FF4500, #FF0000); height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
-        .container { background: rgba(0,0,0,0.4); padding: 40px; border-radius: 25px; backdrop-filter: blur(10px); text-align: center; width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-main { background: white; color: #FF4500; padding: 20px 40px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.3s; display: inline-block; }
+        body { margin: 0; font-family: sans-serif; background: #1a1a1a; display: flex; align-items: center; justify-content: center; height: 100vh; color: white; }
+        .container { background: #333; padding: 30px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; }
+        .btn-main { background: #FF4500; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         #fileInput { display: none; }
-        #status { margin-top: 25px; font-weight: bold; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; }
+        #status { margin-top: 20px; word-break: break-all; }
+        input { width: 100%; margin-top: 10px; padding: 10px; border-radius: 5px; border: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>VÍDEO LINK</h1>
-        <label for="fileInput" class="btn-main">ADICIONAR VÍDEO</label>
-        <input type="file" id="fileInput" accept="video/*">
+        <label for="fileInput" class="btn-main">SELECIONAR VÍDEO</label>
+        <input type="file" id="fileInput" accept="video/mp4">
         <div id="status">Aguardando arquivo...</div>
     </div>
 
@@ -29,7 +30,7 @@
             const status = document.getElementById('status');
             if(!file) return;
 
-            status.innerText = "🚀 Enviando... Não feche a página.";
+            status.innerText = "🚀 Enviando... Aguarde a finalização.";
 
             const formData = new FormData();
             formData.append('file', file);
@@ -43,10 +44,9 @@
                 const data = await response.json();
                 
                 if(data.secure_url) {
-                    status.innerHTML = `✅ Sucesso!<br><input type="text" value="${data.secure_url}" readonly onclick="this.select()">`;
+                    status.innerHTML = `✅ Link Gerado:<br><input type="text" value="${data.secure_url}" readonly onclick="this.select()">`;
                 } else {
-                    status.innerText = "❌ Erro: Verifique se o preset está como 'Unsigned'.";
-                    console.log(data);
+                    status.innerText = "❌ Erro: " + (data.error?.message || "Verifique o preset 'ml_default'");
                 }
             } catch (err) {
                 status.innerText = "❌ Erro de conexão.";
