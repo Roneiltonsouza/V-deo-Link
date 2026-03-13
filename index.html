@@ -2,61 +2,54 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vídeo Link - Oficial</title>
+    <title>Vídeo Link - Direto</title>
     <style>
-        :root { --gradient: linear-gradient(135deg, #800080, #FF4500, #FF0000); }
-        body { margin: 0; font-family: sans-serif; background: var(--gradient); height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
-        .container { background: rgba(0,0,0,0.3); padding: 40px; border-radius: 25px; backdrop-filter: blur(10px); text-align: center; width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.2); }
-        h1 { font-size: 2.5rem; margin-bottom: 20px; text-transform: uppercase; }
-        .btn-main { background: white; color: #FF4500; padding: 20px 40px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.3s; display: inline-block; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .btn-main:hover { transform: scale(1.05); }
+        body { margin: 0; font-family: sans-serif; background: linear-gradient(135deg, #800080, #FF4500, #FF0000); height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
+        .container { background: rgba(0,0,0,0.4); padding: 40px; border-radius: 25px; backdrop-filter: blur(10px); text-align: center; width: 90%; max-width: 400px; }
+        .btn-main { background: white; color: #FF4500; padding: 20px 40px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.3s; display: inline-block; }
         #fileInput { display: none; }
-        #status { margin-top: 25px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; }
-        .result-link { margin-top: 15px; width: 100%; padding: 10px; border-radius: 5px; border: none; text-align: center; font-family: monospace; }
+        #status { margin-top: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>VÍDEO LINK</h1>
-    <label for="fileInput" class="btn-main" id="btnLabel">ADICIONAR VÍDEO</label>
-    <input type="file" id="fileInput" accept="video/mp4">
-    
-    <div id="status">Aguardando arquivo...</div>
-    <div id="resultArea" style="display:none;">
-        <p>URL VÁLIDA M3U8:</p>
-        <input type="text" id="finalLink" class="result-link" readonly>
+    <div class="container">
+        <h1>VÍDEO LINK</h1>
+        <label for="fileInput" class="btn-main">ESCOLHER VÍDEO</label>
+        <input type="file" id="fileInput" accept="video/mp4">
+        <div id="status">Selecione um arquivo para começar.</div>
     </div>
-</div>
 
-<script>
-    document.getElementById('fileInput').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        const status = document.getElementById('status');
-        const btnLabel = document.getElementById('btnLabel');
-        const formData = new FormData();
-        formData.append('video', file);
+    <script>
+        const CLOUD_NAME = "daiq3g0sk"; // Seu Cloud Name
+        const UPLOAD_PRESET = "ml_default"; // Preset padrão da Cloudinary (certifique-se que está ativado no seu painel)
 
-        status.innerText = "Processando no servidor... Aguarde.";
-        btnLabel.style.opacity = "0.5";
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const status = document.getElementById('status');
+            if(!file) return;
 
-        try {
-            // SUBSTITUA A URL ABAIXO PELA URL QUE O RENDER TE DEU
-            const response = await fetch('https://URL_DO_SEU_RENDER.onrender.com/processar', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-            
-            document.getElementById('resultArea').style.display = 'block';
-            document.getElementById('finalLink').value = data.m3u8_url;
-            status.innerText = "Sucesso!";
-        } catch (err) {
-            status.innerText = "Erro: Servidor não encontrado. Verifique a URL do Render.";
-        }
-        btnLabel.style.opacity = "1";
-    });
-</script>
+            status.innerText = "Enviando para a nuvem...";
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if(data.secure_url) {
+                    status.innerHTML = `Sucesso!<br><input type="text" value="${data.secure_url}" readonly style="width:100%; margin-top:10px;">`;
+                } else {
+                    status.innerText = "Erro ao enviar: " + (data.error?.message || "Verifique o upload_preset");
+                }
+            } catch (err) {
+                status.innerText = "Erro de conexão.";
+            }
+        });
+    </script>
 </body>
 </html>
